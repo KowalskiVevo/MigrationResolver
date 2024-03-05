@@ -1,0 +1,1 @@
+insert into ${flyway:defaultSchema}.test_one(value, content) values ('value1', 'content2');

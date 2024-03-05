@@ -1,0 +1,27 @@
+flyway:
+
+spring:
+  application:
+    name: demo-migres
+    schema: main
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    host: localhost:5432
+    database: migres
+    url: jdbc:postgresql://${spring.datasource.host}/${spring.datasource.database}?ApplicationName=${spring.application.name}
+    username: username
+    password: password
+    hikari:
+      maximum-pool-size: 3
+    jpa:
+      properties:
+        hibernate:
+          default_schema: ${spring.application.schema}
+  flyway:
+    enabled: true
+    user: username
+    password: password
+    schemas: ${spring.application.schema}
+#    resolvers: com.example.demo.config.sql.CustomMigrationResolver
+    placeholders:
+      service_user: ${spring.datasource.username}
