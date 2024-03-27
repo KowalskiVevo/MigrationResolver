@@ -18,10 +18,8 @@ spring:
         hibernate:
           default_schema: ${spring.application.schema}
   flyway:
-    enabled: true
-    user: username
-    password: password
-    schemas: ${spring.application.schema}
-#    resolvers: com.example.demo.config.sql.CustomMigrationResolver
-    placeholders:
-      service_user: ${spring.datasource.username}
+    enabled: false
+app:
+  migration_queue:
+    - R__view.sql
+    - R__func.sql

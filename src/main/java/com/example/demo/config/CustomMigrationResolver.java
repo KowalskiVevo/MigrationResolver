@@ -1,5 +1,6 @@
-package com.example.demo.config.sql;
+package com.example.demo.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.api.CoreMigrationType;
 import org.flywaydb.core.api.callback.Event;
 import org.flywaydb.core.api.resolver.MigrationResolver;
@@ -8,23 +9,28 @@ import org.flywaydb.core.api.resource.LoadableResource;
 import org.flywaydb.core.internal.parser.ParsingContext;
 import org.flywaydb.core.internal.parser.PlaceholderReplacingReader;
 import org.flywaydb.core.internal.resolver.ChecksumCalculator;
-import org.flywaydb.core.internal.resolver.ResolvedMigrationComparator;
 import org.flywaydb.core.internal.resolver.ResolvedMigrationImpl;
 import org.flywaydb.core.internal.resolver.sql.SqlMigrationExecutor;
 import org.flywaydb.core.internal.resource.ResourceName;
 import org.flywaydb.core.internal.resource.ResourceNameParser;
 import org.flywaydb.core.internal.sqlscript.SqlScript;
+import org.springframework.stereotype.Component;
 
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Component
+@Slf4j
 public class CustomMigrationResolver implements MigrationResolver {
 
   private final ParsingContext parsingContext;
+  private final AppConfig appConfig;
 
-  public CustomMigrationResolver() {
+  public CustomMigrationResolver(AppConfig appConfig) {
     this.parsingContext = new ParsingContext();
+    this.appConfig = appConfig;
   }
 
   @Override
@@ -33,7 +39,8 @@ public class CustomMigrationResolver implements MigrationResolver {
     addMigrations(migrations, context, false);
     addMigrations(migrations, context, true);
 
-    migrations.sort(new ResolvedMigrationComparator());
+    migrations.sort(new ResolvedPriorityMigrationComparator(appConfig));
+    log.info("\n{}", migrations.stream().map(ResolvedMigration::getScript).collect(Collectors.joining("\n")));
     return migrations;
   }
 
@@ -145,39 +152,4 @@ public class CustomMigrationResolver implements MigrationResolver {
     }
     return context.configuration.getRepeatableSqlMigrationPrefix();
   }
-
-//  @Override
-//  public String getPrefix(Configuration configuration) {
-//    return MigrationResolver.super.getPrefix(configuration);
-//  }
-//
-//  @Override
-//  public MigrationType getDefaultMigrationType() {
-//    return MigrationResolver.super.getDefaultMigrationType();
-//  }
-//
-//  @Override
-//  public boolean isLicensed(Configuration configuration) {
-//    return MigrationResolver.super.isLicensed(configuration);
-//  }
-//
-//  @Override
-//  public boolean isEnabled() {
-//    return MigrationResolver.super.isEnabled();
-//  }
-//
-//  @Override
-//  public String getPluginVersion() {
-//    return MigrationResolver.super.getPluginVersion();
-//  }
-//
-//  @Override
-//  public int getPriority() {
-//    return MigrationResolver.super.getPriority();
-//  }
-//
-//  @Override
-//  public int compareTo(Plugin o) {
-//    return MigrationResolver.super.compareTo(o);
-//  }
 }
