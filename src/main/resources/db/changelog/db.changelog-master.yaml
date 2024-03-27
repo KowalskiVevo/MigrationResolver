@@ -1,0 +1,21 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: kowalski
+  - includeAll:
+      path: DDL
+      relativeToChangelogFile: true
+  - includeAll:
+      path: DML
+      relativeToChangelogFile: true
+  - include:
+      file: REPEATABLE/R__view.sql
+      relativeToChangelogFile: true
+  - include:
+      file: REPEATABLE/R__func.sql
+      relativeToChangelogFile: true
+  - includeAll:
+      path: REPEATABLE
+      relativeToChangelogFile: true
+      filter: com.example.demo.config.NotPropertiesScriptFilter
+

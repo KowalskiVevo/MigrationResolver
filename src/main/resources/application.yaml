@@ -1,5 +1,3 @@
-flyway:
-
 spring:
   application:
     name: demo-migres
@@ -17,8 +15,10 @@ spring:
       properties:
         hibernate:
           default_schema: ${spring.application.schema}
-  flyway:
-    enabled: false
+  liquibase:
+    liquibase-schema: public
+    parameters:
+      schema: ${spring.application.schema}
 app:
   migration_queue:
     - R__view.sql
