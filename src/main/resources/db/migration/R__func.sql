@@ -1,5 +1,6 @@
-CREATE FUNCTION add(a integer, b integer) RETURNS integer
-    LANGUAGE SQL
-    IMMUTABLE
-    RETURNS NULL ON NULL INPUT
-RETURN a + b;
+CREATE OR REPLACE FUNCTION sum_two_numbers(a integer, b integer) RETURNS integer AS
+$$
+BEGIN
+    RETURN a + b;
+END;
+$$ LANGUAGE plpgsql;
