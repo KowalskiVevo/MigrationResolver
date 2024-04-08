@@ -6,6 +6,7 @@ import org.flywaydb.core.api.callback.Event;
 import org.flywaydb.core.api.resolver.MigrationResolver;
 import org.flywaydb.core.api.resolver.ResolvedMigration;
 import org.flywaydb.core.api.resource.LoadableResource;
+import org.flywaydb.core.internal.jdbc.JdbcConnectionFactory;
 import org.flywaydb.core.internal.parser.ParsingContext;
 import org.flywaydb.core.internal.parser.PlaceholderReplacingReader;
 import org.flywaydb.core.internal.resolver.ChecksumCalculator;
@@ -24,20 +25,18 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class CustomMigrationResolver implements MigrationResolver {
-
-  private final ParsingContext parsingContext;
   private final AppConfig appConfig;
 
   public CustomMigrationResolver(AppConfig appConfig) {
-    this.parsingContext = new ParsingContext();
     this.appConfig = appConfig;
   }
 
   @Override
   public List<ResolvedMigration> resolveMigrations(Context context) {
+    ParsingContext parsingContext = getParsingContext(context);
     List<ResolvedMigration> migrations = new ArrayList<>();
-    addMigrations(migrations, context, false);
-    addMigrations(migrations, context, true);
+    addMigrations(migrations, context, parsingContext, false);
+    addMigrations(migrations, context, parsingContext, true);
 
     migrations.sort(new ResolvedPriorityMigrationComparator(appConfig));
     log.info("\n{}", migrations.stream().map(ResolvedMigration::getScript).collect(Collectors.joining("\n")));
@@ -45,7 +44,8 @@ public class CustomMigrationResolver implements MigrationResolver {
   }
 
   private LoadableResource[] createPlaceholderReplacingLoadableResources(List<LoadableResource> loadableResources,
-                                                                         Context context) {
+                                                                         Context context,
+                                                                         ParsingContext parsingContext) {
     List<LoadableResource> list = new ArrayList<>();
 
     for (final LoadableResource loadableResource : loadableResources) {
@@ -84,10 +84,13 @@ public class CustomMigrationResolver implements MigrationResolver {
 
   private Integer getChecksumForLoadableResource(boolean repeatable,
                                                  List<LoadableResource> loadableResources,
-                                                 ResourceName resourceName, Context context) {
+                                                 ResourceName resourceName,
+                                                 Context context,
+                                                 ParsingContext parsingContext) {
     if (repeatable && context.configuration.isPlaceholderReplacement()) {
       parsingContext.updateFilenamePlaceholder(resourceName, context.configuration);
-      return ChecksumCalculator.calculate(createPlaceholderReplacingLoadableResources(loadableResources, context));
+      return ChecksumCalculator.calculate(createPlaceholderReplacingLoadableResources(
+          loadableResources, context, parsingContext));
     }
 
     return ChecksumCalculator.calculate(loadableResources.toArray(new LoadableResource[0]));
@@ -104,6 +107,7 @@ public class CustomMigrationResolver implements MigrationResolver {
 
   private void addMigrations(List<ResolvedMigration> migrations,
                              Context context,
+                             ParsingContext parsingContext,
                              boolean repeatable) {
     String[] suffixes = context.configuration.getSqlMigrationSuffixes();
     String prefix = getPrefixByRepeatable(context, repeatable);
@@ -121,7 +125,7 @@ public class CustomMigrationResolver implements MigrationResolver {
 
       List<LoadableResource> resources = new ArrayList<>();
       resources.add(resource);
-      Integer checksum = getChecksumForLoadableResource(repeatable, resources, resourceName, context);
+      Integer checksum = getChecksumForLoadableResource(repeatable, resources, resourceName, context, parsingContext);
       Integer equivalentChecksum = getEquivalentChecksumForLoadableResource(repeatable, resources);
 
       migrations.add(new ResolvedMigrationImpl(
@@ -151,5 +155,15 @@ public class CustomMigrationResolver implements MigrationResolver {
       return context.configuration.getSqlMigrationPrefix();
     }
     return context.configuration.getRepeatableSqlMigrationPrefix();
+  }
+
+  private ParsingContext getParsingContext(Context context) {
+    ParsingContext parsingContext = new ParsingContext();
+    JdbcConnectionFactory jdbcConnectionFactory =
+        new JdbcConnectionFactory(context.configuration.getDataSource(),
+            context.configuration, context.statementInterceptor);
+    parsingContext.populate(jdbcConnectionFactory.getDatabaseType().createDatabase(
+        context.configuration, jdbcConnectionFactory, context.statementInterceptor), context.configuration);
+    return parsingContext;
   }
 }

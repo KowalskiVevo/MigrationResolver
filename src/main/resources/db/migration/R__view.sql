@@ -1,1 +1,0 @@
-CREATE VIEW version_view AS SELECT version();
