@@ -1,5 +1,3 @@
-flyway:
-
 spring:
   application:
     name: demo-migres
