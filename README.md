@@ -24,7 +24,7 @@
 <dependency>
     <groupId>org.flywaydb</groupId>
     <artifactId>flyway-core</artifactId>
-    <version>${version.flyway}-host</version>
+    <version>${version.flyway}-HOSTCO</version>
 </dependency>
 <dependency>
     <groupId>org.flywaydb</groupId>

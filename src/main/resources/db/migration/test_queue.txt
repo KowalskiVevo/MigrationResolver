@@ -1,0 +1,2 @@
+func/R__func.sql
+view/R__view.sql

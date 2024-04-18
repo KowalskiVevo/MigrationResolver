@@ -16,12 +16,12 @@ spring:
         hibernate:
           default_schema: ${spring.application.schema}
   flyway:
+    migration-queue:
+      - view/R__view.sql
+      - func/R__func.sql
+    migration-queue-file: db/migration/test_queue.txt
     enabled: true
     locations:
       - classpath:db/migration
       - classpath:db/migration/func
       - classpath:db/migration/view
-app:
-  migration_queue:
-    - view/R__view.sql
-    - func/R__func.sql
