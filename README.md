@@ -1,4 +1,4 @@
-Этот репозиторий содержит модифицированную версию Flyway, популярного инструмента для миграции баз данных.
+Этот форк содержит модифицированную версию Flyway, популярного инструмента для миграции баз данных.
 Основное изменение заключается в добавлении поддержки сохранения порядка выполнения
 для repeatable миграций.
 
@@ -14,9 +14,9 @@
 миграций.
 
 ## Как использовать?
-Чтобы использовать данную версию инструмента, нужно добавить в зависимости модули
-`flyway-core` и `flyway-database-<требуемая БД>` и указать в `flyway-core` текущую версию данного проекта
-(на данный момент 10.11.0-host).
+Чтобы использовать этот форк, нужно добавить в зависимости модули
+`flyway-core` и указать в `flyway-core` текущую версию данного проекта
+(на данный момент 9.0.4-HOSTCO).
 
 Пример:
 
@@ -25,11 +25,6 @@
     <groupId>org.flywaydb</groupId>
     <artifactId>flyway-core</artifactId>
     <version>${version.flyway}-HOSTCO</version>
-</dependency>
-<dependency>
-    <groupId>org.flywaydb</groupId>
-    <artifactId>flyway-database-postgresql</artifactId>
-    <version>${version.flyway}</version>
 </dependency>
 ```
 
@@ -252,18 +247,18 @@ Flyway не позволяет заполнить параметр resolvers ч�
 @ConditionalOnProperty(name = "spring.flyway.enabled", havingValue = "true")
 @Bean(initMethod = "migrate")
 public Flyway flyway(AppConfig appConfig) {
-var flywayDataSource = new DriverManagerDataSource();
-flywayDataSource.setUsername("username");
-flywayDataSource.setPassword("password");
-flywayDataSource.setUrl("jdbc:postgresql://localhost:5432/migres");
+  var flywayDataSource = new DriverManagerDataSource();
+  flywayDataSource.setUsername("username");
+  flywayDataSource.setPassword("password");
+  flywayDataSource.setUrl("jdbc:postgresql://localhost:5432/migres");
 
-return Flyway.configure()
-    .resolvers(new CustomMigrationResolver(appConfig))
-    .skipDefaultResolvers(true)
-    .dataSource(flywayDataSource)
-    .locations("classpath:db/migration")
-    .schemas("main")
-    .load();
+  return Flyway.configure()
+      .resolvers(new CustomMigrationResolver(appConfig))
+      .skipDefaultResolvers(true)
+      .dataSource(flywayDataSource)
+      .locations("classpath:db/migration")
+      .schemas("main")
+      .load();
 }
 ```
 
